@@ -142,7 +142,3 @@ This project is licensed under the **MIT License** — feel free to use and modi
 
 ```
 
----
-
-Would you like me to make this README automatically generate a **project banner image** (using your app name and design theme) for the top section? It makes the GitHub repo look more professional.
-```
