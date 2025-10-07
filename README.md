@@ -139,6 +139,3 @@ Then open the displayed URL (usually `http://localhost:8501`) in your browser.
 ## 🪪 License
 
 This project is licensed under the **MIT License** — feel free to use and modify it.
-
-```
-
