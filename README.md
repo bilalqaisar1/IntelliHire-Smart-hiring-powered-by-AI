@@ -131,7 +131,7 @@ Then open the displayed URL (usually `http://localhost:8501`) in your browser.
 ## 👨‍💻 Author
 
 **Bilal Qaisar**
-🎓 Data Analyst & Power BI Developer | BS Data Science @ PUCIT
+🎓 AI Engineer @ Primo Dialler | BS Data Science @ PUCIT
 📧 [LinkedIn](https://www.linkedin.com/in/bilalqaisar) • [GitHub](https://github.com/bilalqaisar)
 
 ---
