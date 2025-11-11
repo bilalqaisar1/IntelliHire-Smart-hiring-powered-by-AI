@@ -64,5 +64,8 @@ def compute_match(job_text: str, resume_text: str) -> Dict[str, Any]:
         "matched_skills": matched,
         "missing_skills": missing,
         "experiences": resume_info.get("experiences"),
+        "education": resume_info.get("education"),
         "job_title": job_info.get("title"),
+        "candidate_name": resume_info.get("name"),
+        "candidate_current_title": resume_info.get("current_title"),
     }

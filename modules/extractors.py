@@ -60,6 +60,34 @@ def extract_job_requirements(job_text: str) -> Dict[str, Any]:
         }
     return parsed
 
+def extract_candidate_identity(resume_text: str) -> Dict[str, Any]:
+    """Extracts candidate's name and current/most recent title from resume text."""
+    sys_prompt = (
+        "You extract identity fields from resumes. Return ONLY valid JSON."
+    )
+    user_prompt = (
+        "From the following resume text, extract the candidate's personal name and the most "
+        "recent or current professional title. If title is unclear, return null.\n\n"
+        "Required keys: name, current_title.\n\n"
+        f"Resume Text:\n{resume_text}\n\n"
+        "Return strictly JSON, no extra text."
+    )
+    parsed = call_chat_json(sys_prompt, user_prompt, max_tokens=200)
+    if parsed is None:
+        # Heuristic fallback: pick first non-empty line with <= 5 words and title-cased tokens
+        name = None
+        current_title = None
+        for raw_line in resume_text.splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+            tokens = line.split()
+            if 1 <= len(tokens) <= 5 and sum(t[:1].isupper() for t in tokens) >= max(1, len(tokens) - 1):
+                name = line
+                break
+        return {"name": name, "current_title": current_title}
+    return {"name": parsed.get("name"), "current_title": parsed.get("current_title")}
+
 def extract_resume_profile(resume_text: str) -> Dict[str, Any]:
     """Extracts total experience, skills, and experiences from resume."""
     sys_prompt = (
@@ -96,14 +124,21 @@ def extract_resume_profile(resume_text: str) -> Dict[str, Any]:
         "   - duration_years: approximate numeric value if possible, else null\n"
         "   - description: concise summary of responsibilities or achievements\n\n"
 
-        "If no experience details are found, return an empty array for 'experiences'.\n\n"
+        "4️⃣ education: Extract an array of objects with fields:\n"
+        "   - degree: e.g., B.Sc. in Computer Science\n"
+        "   - institution: e.g., MIT\n"
+        "   - start_date: month-year or year if available\n"
+        "   - end_date: month-year, 'Present', or null\n\n"
+
+        "If no experience details are found, return an empty array for 'experiences'. If no education found, return an empty array for 'education'.\n\n"
 
         "Ensure the JSON keys are exactly as follows: "
-        "total_experience_years, skills, experiences.\n\n"
+        "total_experience_years, skills, experiences, education.\n\n"
 
         "### Example Output ###\n"
         '{"total_experience_years": 4.5, "skills":["Python","Pandas","SQL","Power BI","Excel","Data Cleaning"], '
-        '"experiences":[{"position":"Data Analyst","company":"ABC Corp","start_date":"Jan 2020","end_date":"Mar 2023","duration_years":3.17,"description":"Worked on ETL, dashboards, and data automation"}]}\n\n'
+        '"experiences":[{"position":"Data Analyst","company":"ABC Corp","start_date":"Jan 2020","end_date":"Mar 2023","duration_years":3.17,"description":"Worked on ETL, dashboards, and data automation"}], '
+        '"education":[{"degree":"B.Sc. Computer Science","institution":"ABC University","start_date":"2015","end_date":"2019"}]}\n\n'
 
         "### Resume Text ###\n"
         f"{resume_text}\n\n"
@@ -113,5 +148,13 @@ def extract_resume_profile(resume_text: str) -> Dict[str, Any]:
     parsed = call_chat_json(sys_prompt, user_prompt, max_tokens=800)
     if parsed is None:
         total_exp = find_years_in_text(resume_text)
-        parsed = {"total_experience_years": total_exp, "skills": [], "experiences": []}
+        parsed = {"total_experience_years": total_exp, "skills": [], "experiences": [], "education": []}
+    # Enrich with identity fields
+    try:
+        ident = extract_candidate_identity(resume_text)
+        parsed["name"] = ident.get("name")
+        parsed["current_title"] = ident.get("current_title")
+    except Exception:
+        parsed.setdefault("name", None)
+        parsed.setdefault("current_title", None)
     return parsed
