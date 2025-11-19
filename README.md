@@ -34,7 +34,7 @@ An AI-powered application that performs intelligent resume screening and conduct
 
 ```
 Resume-U/
-├── final_app.py                 # Main Streamlit application
+├── app.py                 # Main Streamlit application
 ├── requirements.txt             # Python dependencies
 ├── README.md                    # This file
 ├── modules/
